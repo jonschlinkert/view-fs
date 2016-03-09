@@ -1,0 +1,70 @@
+{
+  "name": "view-fs",
+  "description": "View plugin that adds methods for working with the file system.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/jonschlinkert/view-fs",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "repository": "jonschlinkert/view-fs",
+  "bugs": {
+    "url": "https://github.com/jonschlinkert/view-fs/issues"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "debug": "^2.2.0",
+    "delete": "^0.3.0",
+    "extend-shallow": "^2.0.1",
+    "read-file": "^0.2.0",
+    "write": "^0.2.1"
+  },
+  "devDependencies": {
+    "gulp-format-md": "^0.1.7",
+    "mocha": "*",
+    "templates": "^0.15.4"
+  },
+  "keywords": [
+    "assemble",
+    "copy",
+    "del",
+    "delete",
+    "file",
+    "fs",
+    "move",
+    "path",
+    "plugin",
+    "read",
+    "templates",
+    "verb",
+    "vinyl",
+    "write"
+  ],
+  "verb": {
+    "related": {
+      "list": []
+    },
+    "run": true,
+    "toc": false,
+    "layout": "default",
+    "tasks": [
+      "readme"
+    ],
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "reflinks": [
+      "verb"
+    ],
+    "lint": {
+      "reflinks": true
+    }
+  }
+}
