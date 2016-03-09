@@ -1,6 +1,6 @@
 # view-fs [![NPM version](https://img.shields.io/npm/v/view-fs.svg)](https://www.npmjs.com/package/view-fs) [![Build Status](https://img.shields.io/travis/jonschlinkert/view-fs.svg)](https://travis-ci.org/jonschlinkert/view-fs)
 
-> View plugin that adds methods for working with the file system.
+> View plugin for `templates` that adds methods for working with the file system. Works with assemble, verb, and any other `templates` based applications
 
 ## Install
 
@@ -13,7 +13,11 @@ $ npm install view-fs --save
 ## Usage
 
 ```js
-var fs = require('view-fs');
+var templates = require('templates');
+var viewFs = require('view-fs');
+
+var app = templates();
+app.use(viewFs());
 ```
 
 ## API

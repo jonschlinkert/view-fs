@@ -1,6 +1,6 @@
 {
   "name": "view-fs",
-  "description": "View plugin that adds methods for working with the file system.",
+  "description": "View plugin for `templates` that adds methods for working with the file system. Works with assemble, verb, and any other `templates` based applications",
   "version": "0.1.0",
   "homepage": "https://github.com/jonschlinkert/view-fs",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
