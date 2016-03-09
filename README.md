@@ -16,6 +16,83 @@ $ npm install view-fs --save
 var fs = require('view-fs');
 ```
 
+## API
+
+### [.read](index.js#L40)
+
+Read `file.path` and update `file.contents` with the result.
+
+**Params**
+
+* `options` **{Object}**: Options to pass to `  fs.readFile` and/or define `options.forceRead` to read from the file system, even when `file.contents` is already populated.
+* `cb` **{Function}**
+
+**Example**
+
+```js
+app.view('foo.txt')
+  .read(function(err, file) {
+     console.log(file.contents);
+  });
+```
+
+### [.write](index.js#L93)
+
+Asynchronously writes `file.contents` to the given `dest` path on the file system, replacing the file if it already exists.
+
+**Params**
+
+* `dest` **{String}**: Desination directory
+* `options` **{Object}**
+* `cb` **{Function}**
+
+**Example**
+
+```js
+app.view('foo.txt', {content: 'this is content...'})
+  .write('dist/', function(err, view) {
+     // writes to `dist/foo.txt`
+  });
+```
+
+### [.del](index.js#L144)
+
+Asynchronously deletes `file.path` from the file system.
+
+**Params**
+
+* `options` **{Object}**
+* `cb` **{Function}**
+
+**Example**
+
+```js
+app.view('foo.txt', {content: 'this is content...'})
+  .del(function(err) {
+    if (err) throw err;
+  });
+```
+
+### [.move](index.js#L171)
+
+Asynchronously writes `file.contents` to the given `dest` directory, and deletes the source file at `file.path`.
+
+**Params**
+
+* `dest` **{String}**: Desination directory
+* `options` **{Object}**
+* `cb` **{Function}**
+
+**Example**
+
+```js
+app.view('foo.txt', {content: 'this is content...'})
+  .move('dist/', function(err) {
+    if (err) throw err;
+    // writes `dist/foo.txt` and deletes `foo.txt`
+  });
+```
+
 ## Contributing
 
 Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/jonschlinkert/view-fs/issues/new).
