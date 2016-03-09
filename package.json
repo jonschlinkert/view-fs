@@ -24,12 +24,12 @@
     "delete": "^0.3.0",
     "extend-shallow": "^2.0.1",
     "read-file": "^0.2.0",
-    "write": "^0.2.1"
+    "write": "^0.3.0"
   },
   "devDependencies": {
     "gulp-format-md": "^0.1.7",
-    "mocha": "*",
-    "templates": "^0.15.4"
+    "mocha": "^2.4.5",
+    "templates": "^0.15.5"
   },
   "keywords": [
     "assemble",
