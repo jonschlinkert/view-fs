@@ -10,10 +10,7 @@
 var fs = require('fs');
 var path = require('path');
 var debug = require('debug')('fs');
-var extend = require('extend-shallow');
-var read = require('read-file');
-var write = require('write');
-var del = require('delete');
+var utils = require('./utils');
 
 module.exports = function(config) {
   return function fn(view) {
@@ -48,7 +45,7 @@ module.exports = function(config) {
 
       var opts = file.options;
       if (typeof options !== 'string') {
-        opts = extend({}, file.options, options);
+        opts = utils.extend({}, file.options, options);
       }
 
       if (!file.path || (file.contents && opts.read !== true)) {
@@ -60,15 +57,15 @@ module.exports = function(config) {
         if (err) return cb(err);
 
         if (stats.isDirectory()) {
-          cb(null, view);
+          cb(null, file);
           return;
         }
 
         // pass original options, not merged (could be a string)
-        read(file.path, options, function(err, contents) {
+        utils.read(file.path, options, function(err, contents) {
           if (err) return cb(err);
           file.contents = contents;
-          cb(null, view);
+          cb(null, file);
         });
       });
     });
@@ -84,6 +81,7 @@ module.exports = function(config) {
      *   });
      * ```
      * @name .write
+     * @emits write
      * @param {String} `dest` Desination directory
      * @param {Object} `options`
      * @param {Function} `cb`
@@ -104,24 +102,21 @@ module.exports = function(config) {
         options = {};
       }
 
-      var opts = extend({}, file.options, options);
-      var filepath = file.path;
+      var opts = utils.extend({}, file.options, options);
+      var filePath = file.path;
 
       file.read(opts, function(err, file) {
         if (err) return cb(err);
 
-        file.dest = dest || file.dest;
-        var destPath = path.resolve(file.dest, file.relative);
+        var relative = opts.flatten ? file.basename : file.relative;
+        file.dest = path.resolve(dest || file.dest);
+        file.path = path.resolve(file.dest, relative);
 
         // pass original options, not merged (could be a string)
-        write(destPath, file.contents.toString(), options, function(err) {
+        utils.write(file.path, file.contents.toString(), options, function(err) {
           if (err) return cb(err);
-
-          if (opts.move) {
-            file.del(filepath, cb);
-          } else {
-            cb(null, view);
-          }
+          file.emit('write', file, filePath, file.path);
+          cb(null, view);
         });
       });
     });
@@ -136,6 +131,7 @@ module.exports = function(config) {
      *   });
      * ```
      * @name .del
+     * @emits del
      * @param {Object} `options`
      * @param {Function} `cb`
      * @api public
@@ -146,8 +142,13 @@ module.exports = function(config) {
         cb = options;
         options = {};
       }
-      var opts = extend({}, this.options, options);
-      del(file.path, opts, cb);
+
+      var file = this;
+      utils.del(this.path, utils.extend({}, this.options, options), function(err) {
+        if (err) return cb(err);
+        file.emit('del', file, file.path);
+        cb();
+      });
     });
 
     /**
@@ -162,6 +163,7 @@ module.exports = function(config) {
      *   });
      * ```
      * @name .move
+     * @emits move
      * @param {String} `dest` Desination directory
      * @param {Object} `options`
      * @param {Function} `cb`
@@ -173,9 +175,19 @@ module.exports = function(config) {
         cb = options;
         options = {};
       }
-      var opts = extend({}, this.options, options);
-      opts.move = true;
-      this.write(dest, opts, cb);
+
+      var opts = utils.extend({flatten: true}, this.options, options);
+      var origPath = this.path;
+      var file = this;
+
+      this.write(dest, opts, function() {
+        utils.del(origPath, opts, function(err) {
+          if (err) return cb(err);
+          file.emit('del', file, origPath);
+          file.emit('move', file, origPath, file.path);
+          cb();
+        });
+      });
     });
   };
 };

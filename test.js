@@ -7,23 +7,14 @@ var path = require('path');
 var assert = require('assert');
 var del = require('delete');
 var read = require('read-file');
+var exists = require('fs-exists-sync');
 var App = require('templates');
 var plugin = require('./');
 var app;
 
-function exists(fp, expected, cb) {
-  fs.stat(fp, function(err, stats) {
-    if (err) return cb(err);
-
-    read(fp, 'utf8', function(err, actual) {
-      if (err) return cb(err);
-      if (expected !== actual) {
-        cb(err);
-      } else {
-        cb();
-      }
-    });
-  });
+function equalContent(fp, str) {
+  var content = fs.readFileSync(fp, 'utf8');
+  return str === content;
 }
 
 describe('view.fs', function() {
@@ -98,7 +89,8 @@ describe('view.fs', function() {
 
       view.write('actual', function(err) {
         if (err) return cb(err);
-        exists('actual/foo.txt', view.content, cb);
+        assert(equalContent('actual/foo.txt', view.content));
+        cb();
       });
     });
 
@@ -106,7 +98,8 @@ describe('view.fs', function() {
       var view = app.pages.addView('foo.txt', { content: 'this is foo', dest: 'actual' });
       view.write(function(err) {
         if (err) return cb(err);
-        exists('actual/foo.txt', view.content, cb);
+        assert(equalContent('actual/foo.txt', view.content));
+        cb();
       });
     });
 
@@ -116,7 +109,8 @@ describe('view.fs', function() {
       view.basename = 'whatever.js';
       view.write('actual', function(err) {
         if (err) return cb(err);
-        exists('actual/whatever.js', view.content, cb);
+        assert(equalContent('actual/whatever.js', view.content));
+        cb();
       });
     });
 
@@ -128,7 +122,8 @@ describe('view.fs', function() {
 
       view.write('actual', function(err) {
         if (err) return cb(err);
-        exists('actual/whatever.js', view.content, cb);
+        assert(equalContent('actual/whatever.js', view.content));
+        cb();
       });
     });
 
@@ -141,7 +136,92 @@ describe('view.fs', function() {
 
       view.write('actual', function(err) {
         if (err) return cb(err);
-        exists('actual/abc/whatever.js', view.content, cb);
+        assert(equalContent('actual/abc/whatever.js', view.content));
+        cb();
+      });
+    });
+
+    it('should emit `write`', function(cb) {
+      var view = app.pages.addView('foo.txt', { content: 'this is foo' });
+      var count = 0;
+
+      view.on('write', function() {
+        count++;
+      });
+
+      view.write('actual', function(err) {
+        if (err) return cb(err);
+        assert.equal(count, 1);
+        cb();
+      });
+    });
+  });
+
+  describe('view.del', function(cb) {
+    it('should delete the view from the file system', function(cb) {
+      var view = app.pages.addView('foo.txt', { content: 'this is foo' });
+
+      view.write('actual', function(err) {
+        if (err) return cb(err);
+
+        assert(exists(view.path));
+        view.del(function(err) {
+          if (err) return cb(err);
+
+          assert(!exists(view.path));
+          cb();
+        });
+      });
+    });
+  });
+
+  describe('view.move', function(cb) {
+    it('should move a file', function(cb) {
+      var view = app.pages.addView('foo.txt', { content: 'this is foo' });
+      var fp = view.path;
+
+      view.write('fixtures', function(err) {
+        if (err) return cb(err);
+        var writePath = view.path;
+        var basename = view.basename;
+        assert(exists(view.path));
+
+        view.move('actual', function(err) {
+          if (err) return cb(err);
+          assert(!exists(fp));
+          assert(!exists(writePath));
+          assert(exists(path.resolve(__dirname, 'actual', basename)));
+          cb();
+        });
+      });
+    });
+
+    it('should emit move', function(cb) {
+      var view = app.pages.addView('foo.txt', { content: 'this is foo' });
+      var fp = path.resolve(__dirname, 'fixtures/foo.txt');
+      var count = 0;
+
+      view.on('write', function() {
+        count++;
+      });
+
+      view.on('del', function(file, origPath) {
+        assert.equal(fp, origPath);
+        count++;
+      });
+
+      view.on('move', function(file, origPath) {
+        assert.equal(fp, origPath);
+        count++;
+      });
+
+      view.write('fixtures', function(err) {
+        if (err) return cb(err);
+        view.move('actual', function(err) {
+          if (err) return cb(err);
+          assert.equal(count, 4);
+          cb();
+        });
       });
     });
   });
